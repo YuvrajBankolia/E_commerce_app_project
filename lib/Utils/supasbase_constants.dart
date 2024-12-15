@@ -1,0 +1,3 @@
+const String appUrl = "https://nfgveiyfvzjjkbzwkawq.supabase.co";
+const String appKey =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mZ3ZlaXlmdnpqamtiendrYXdxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQxNTc1ODUsImV4cCI6MjA0OTczMzU4NX0.rMWOwFvyNOwS8F45bcf1zz3G7gx65mq03zGhnnxvUy4";
