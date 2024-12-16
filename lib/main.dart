@@ -1,32 +1,9 @@
-// import 'package:ecommerce_app/views/SQLExecutesSvreen.dart';
-// import 'package:flutter/material.dart';
-// import 'package:supabase_flutter/supabase_flutter.dart';
-
-// void main() async {
-//   WidgetsFlutterBinding.ensureInitialized();
-//   await Supabase.initialize(
-//     url:
-//         'https://nfgveiyfvzjjkbzwkawq.supabase.co', // Replace with your Supabase URL
-//     anonKey:
-//         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mZ3ZlaXlmdnpqamtiendrYXdxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQxNTc1ODUsImV4cCI6MjA0OTczMzU4NX0.rMWOwFvyNOwS8F45bcf1zz3G7gx65mq03zGhnnxvUy4', // Replace with your Supabase anon key
-//   );
-//   runApp(MyApp());
-// }
-
-// class MyApp extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       title: 'Supabase SQL Editor',
-//       home: SQLExecutorScreen(),
-//     );
-//   }
-// }
-
 import 'package:ecommerce_app/views/loginView.dart';
+import 'package:ecommerce_app/views/productListedTo_SB.dart';
 // import 'package:ecommerce_app/views/send_OTP.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -34,8 +11,15 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await Supabase.initialize(
+    url: 'https://nfgveiyfvzjjkbzwkawq.supabase.co',
+    anonKey:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mZ3ZlaXlmdnpqamtiendrYXdxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQxNTc1ODUsImV4cCI6MjA0OTczMzU4NX0.rMWOwFvyNOwS8F45bcf1zz3G7gx65mq03zGhnnxvUy4', // Replace with your Supabase anon key
+  );
   runApp(const MyApp());
 }
+
+final supabase = Supabase.instance.client;
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -49,7 +33,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const Loginview(),
+      home: const ProductlistedtoSb(),
     );
   }
 }

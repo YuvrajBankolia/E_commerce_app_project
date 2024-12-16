@@ -93,7 +93,7 @@ class _LoginviewState extends State<Loginview> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TextField(
+            TextFormField(
               controller: _email,
               enableSuggestions: false,
               autocorrect: false,
@@ -103,7 +103,7 @@ class _LoginviewState extends State<Loginview> {
               ),
             ),
             const SizedBox(height: 16),
-            TextField(
+            TextFormField(
               controller: _password,
               obscureText: true,
               enableSuggestions: false,
