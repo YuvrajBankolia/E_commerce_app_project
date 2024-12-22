@@ -1,11 +1,7 @@
 import 'package:ecommerce_app/views/loginView.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'dart:developer' as devtools show log;
-
-// import 'package:mynotes/constant/routes.dart';
-// import 'package:firebase_core/firebase_core.dart';
-// import 'package:mynotes/firebase_options.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class RegisterView extends StatefulWidget {
   const RegisterView({super.key});
@@ -17,6 +13,8 @@ class RegisterView extends StatefulWidget {
 class _RegisterViewState extends State<RegisterView> {
   late final TextEditingController _email;
   late final TextEditingController _password;
+  final List<String> _options = ['Vendor', 'Customer'];
+  List<String> _selectedOptions = [];
 
   @override
   void initState() {
@@ -32,157 +30,165 @@ class _RegisterViewState extends State<RegisterView> {
     super.dispose();
   }
 
+  Future<void> _registerUser(String email, String password) async {
+    try {
+      // Supabase signup
+      final response = await Supabase.instance.client.auth.signUp(
+        email: email,
+        password: password,
+      );
+
+      if (response.user != null) {
+        // User successfully registered
+        devtools.log("User registered: ${response.user!.email}");
+
+        // Navigate to login view
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const LoginView()),
+        );
+      } else {
+        // Unexpected response
+        _showErrorDialog("An unknown error occurred. Please try again.");
+      }
+    } catch (e) {
+      // Handle unexpected errors
+      devtools.log("Error: $e");
+      _showErrorDialog("An unexpected error occurred. Please try again.");
+    }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Error"),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showSingleSelectDialog() async {
+    final String? result = await showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        String? selectedOption =
+            _selectedOptions.isNotEmpty ? _selectedOptions.first : null;
+
+        return AlertDialog(
+          title: const Text('Select Login Option'),
+          content: SingleChildScrollView(
+            child: Column(
+              children: _options.map((option) {
+                return RadioListTile<String>(
+                  value: option,
+                  groupValue: selectedOption,
+                  title: Text(option),
+                  onChanged: (String? value) {
+                    setState(() {
+                      selectedOption = value;
+                    });
+                    Navigator.pop(
+                        context, value); // Close dialog with selected value
+                  },
+                );
+              }).toList(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () =>
+                  Navigator.pop(context, null), // Dismiss without selecting
+              child: const Text('Cancel'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result != null) {
+      setState(() {
+        _selectedOptions = [result]; // Keep only the selected option
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // return Container(color: Colors.purple);
-    // return const Placeholder(color: Colors.purple);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Register'),
         backgroundColor: Colors.lime,
       ),
-      body: Column(
-        children: [
-          SizedBox(
-            height: 10,
-          ),
-          TextField(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            RichText(
+              text: const TextSpan(
+                  text:
+                      'when you tap on register we send a email verfication on your entered email to verify ',
+                  style: TextStyle(fontSize: 15, color: Colors.black87)),
+            ),
+            const SizedBox(height: 10),
+            TextField(
               controller: _email,
               enableSuggestions: false,
               autocorrect: false,
               keyboardType: TextInputType.emailAddress,
               decoration: const InputDecoration(
-                  hintText: '  Enter your email address')),
-          TextField(
+                hintText: 'Enter your email address',
+              ),
+            ),
+            const SizedBox(height: 10),
+            TextField(
               controller: _password,
               obscureText: true,
               enableSuggestions: false,
               autocorrect: false,
-              decoration:
-                  const InputDecoration(hintText: '  Enter your password')),
-          ElevatedButton(
-            onPressed: () async {
-              final email = _email.text;
-              final password = _password.text;
-              try {
-                final userCredential = await FirebaseAuth.instance
-                    .createUserWithEmailAndPassword(
-                        email: email, password: password);
-
-                devtools.log(userCredential.toString());
-              } on FirebaseAuthException catch (e) {
-                if (e.code == 'weak-password') {
-                  devtools.log('weak password');
-                } else if (e.code == 'email-alreadi-in-use') {
-                  devtools.log('email already in use');
-                } else if (e.code == 'invalid-email') {
-                  devtools.log('invalid email entered');
+              decoration: const InputDecoration(
+                hintText: 'Enter your password',
+              ),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: _showSingleSelectDialog,
+              child: const Text('Select Login Options'),
+            ),
+            const SizedBox(height: 10),
+            Text('Selected Options: ${_selectedOptions.join(", ")}'),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                final email = _email.text.trim();
+                final password = _password.text.trim();
+                if (email.isEmpty || password.isEmpty) {
+                  _showErrorDialog("Email and password cannot be empty.");
+                  return;
                 }
-              }
-              {
+                _registerUser(email, password);
+              },
+              child: const Text('Register'),
+            ),
+            ElevatedButton(
+              onPressed: () {
                 Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => const Loginview()),
+                  MaterialPageRoute(builder: (context) => const LoginView()),
                 );
-              }
-            },
-            child: const Text('Register'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const Loginview()),
-                // Navigator.of(context).pushNamedAndRemoveUntil(
-                //   loginRoute,
-                //   (_) => false,
-                // );
-              );
-            },
-            child: const Text('Already Register ? Login Here'),
-          )
-        ],
+              },
+              child: const Text('Already Registered? Login Here'),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
-
-
-// import 'package:ecommerce_app/views/loginView.dart';
-// import 'package:firebase_auth/firebase_auth.dart';
-// import 'package:flutter/material.dart';
-// import 'dart:developer' as devtools show log;
-
-// class Registerview extends StatefulWidget {
-//   const Registerview({super.key});
-
-//   @override
-//   State<Registerview> createState() => _RegisterviewState();
-// }
-
-// class _RegisterviewState extends State<Registerview> {
-//   late final TextEditingController _email;
-//   late final TextEditingController _password;
-//   @override
-//   void initState() {
-//     _email = TextEditingController();
-//     _password = TextEditingController();
-//     super.initState();
-//   }
-
-//   @override
-//   void dispose() {
-//     _email.dispose();
-//     _password.dispose();
-//     super.dispose();
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: const Text('Register View'),
-//         backgroundColor: Colors.lime,
-//       ),
-//       body: Column(
-//         children: [
-//           const TextField(
-//             decoration: InputDecoration(hintText: '  Enter your email here !'),
-//           ),
-//           const TextField(
-//             decoration: InputDecoration(hintText: '  Enter your password here'),
-//           ),
-//           TextButton(
-//             onPressed: () async {
-//               final email = _email.text;
-//               final password = _password.text;
-//               try {
-//                 final userCredential = await FirebaseAuth.instance
-//                     .createUserWithEmailAndPassword(
-//                         email: email, password: password);
-
-//                 devtools.log(userCredential.toString());
-//               } on FirebaseAuthException catch (e) {
-//                 if (e.code == 'weak-password') {
-//                   devtools.log('weak password');
-//                 } else if (e.code == 'email-alreadi-in-use') {
-//                   devtools.log('email already in use');
-//                 } else if (e.code == 'invalid-email') {
-//                   devtools.log('invalid email entered');
-//                 }
-//               }
-//             },
-//             child: const Text('Register'),
-//           ),
-//           TextButton(
-//             onPressed: () {
-//               Navigator.push(
-//                 context,
-//                 MaterialPageRoute(builder: (context) => const Loginview()),
-//               );
-//             },
-//             child: const Text('Already Register'),
-//           )
-//         ],
-//       ),
-//     );
-//   }
-// }

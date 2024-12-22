@@ -17,9 +17,17 @@ class _ProductPageState extends State<ProductPage> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
   final TextEditingController priceController = TextEditingController();
+  List<dynamic> products = [];
+  final List<bool> _favorites = List.generate(3, (index) => false);
+
+  // Toggle the favorite status
+  void _toggleFavorite(int index) {
+    setState(() {
+      _favorites[index] = !_favorites[index];
+    });
+  }
 
   // List to hold fetched products
-  List<dynamic> products = [];
 
   @override
   void initState() {
@@ -236,6 +244,16 @@ class _ProductPageState extends State<ProductPage> {
                     subtitle: Text(
                         '${product['description'] ?? ''}\nPrice: \$${product['price'] ?? '0'}'),
                     isThreeLine: true,
+                    trailing: IconButton(
+                      icon: Icon(
+                        _favorites[index]
+                            ? Icons.favorite
+                            : Icons.favorite_border,
+                        color: _favorites[index] ? Colors.red : Colors.grey,
+                      ),
+                      onPressed: () =>
+                          _toggleFavorite(index), // Toggle favorite on tap
+                    ),
                   ),
                 );
               },

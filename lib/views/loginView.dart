@@ -1,24 +1,23 @@
-import 'package:ecommerce_app/views/forgot_password_view.dart';
+// import 'package:ecommerce_app/views/forgot_password_view.dart';
 import 'package:ecommerce_app/views/registerView.dart';
 import 'package:ecommerce_app/utilities/show_error_dialogue.dart';
 import 'package:ecommerce_app/views/send_OTP.dart';
-import 'package:ecommerce_app/views/smpt_config.dart';
+// import 'package:ecommerce_app/views/smpt_config.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'homepage.dart'; // Ensure Homepage is correctly implemented
 
-class Loginview extends StatefulWidget {
-  const Loginview({super.key});
+class LoginView extends StatefulWidget {
+  const LoginView({super.key});
 
   @override
-  State<Loginview> createState() => _LoginviewState();
+  State<LoginView> createState() => _LoginViewState();
 }
 
-class _LoginviewState extends State<Loginview> {
+class _LoginViewState extends State<LoginView> {
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
-  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   void dispose() {
@@ -32,34 +31,34 @@ class _LoginviewState extends State<Loginview> {
     final password = _password.text.trim();
 
     try {
-      // Firebase login
-      final userCredential = await _auth.signInWithEmailAndPassword(
+      // Supabase login
+      final response = await Supabase.instance.client.auth.signInWithPassword(
         email: email,
         password: password,
       );
 
-      print('User signed in: ${userCredential.user?.email}');
+      if (response.session != null) {
+        // User successfully logged in
+        print('User signed in: ${response.user?.email}');
 
-      // Save login state in SharedPreferences
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('isLoggedIn', true);
-      await prefs.setString('email', email);
+        // Save login state in SharedPreferences
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('isLoggedIn', true);
+        await prefs.setString('email', email);
 
-      // Navigate to Homepage
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const Homepage()),
-      );
-    } on FirebaseAuthException catch (e) {
-      // Handle Firebase-specific errors
-      if (e.code == 'user-not-found') {
-        await showErrorDialog(context, 'No user found for this email.');
-      } else if (e.code == 'wrong-password') {
-        await showErrorDialog(context, 'Incorrect password.');
+        // Navigate to Homepage
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const Homepage()),
+        );
       } else {
-        await showErrorDialog(context, 'Error: ${e.code}');
+        // Handle unexpected login failure
+        await showErrorDialog(context, 'Login failed. Please try again.');
       }
+    } on AuthException catch (e) {
+      // Handle Supabase-specific authentication errors
+      await showErrorDialog(context, e.message ?? 'Authentication error');
     } catch (e) {
-      // Handle other errors
+      // Handle general errors
       await showErrorDialog(context, 'Error: ${e.toString()}');
     }
   }
@@ -120,7 +119,9 @@ class _LoginviewState extends State<Loginview> {
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => MyWidget()),
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          MyWidget()), // Update this with your Forgot Password View
                 );
               },
               child: const Text('Forgot your password?'),
@@ -139,6 +140,156 @@ class _LoginviewState extends State<Loginview> {
     );
   }
 }
+
+
+
+
+
+
+
+
+
+// import 'package:ecommerce_app/views/forgot_password_view.dart';
+// import 'package:ecommerce_app/views/registerView.dart';
+// import 'package:ecommerce_app/utilities/show_error_dialogue.dart';
+// import 'package:ecommerce_app/views/send_OTP.dart';
+// import 'package:ecommerce_app/views/smpt_config.dart';
+// import 'package:flutter/material.dart';
+// import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
+// import 'homepage.dart';
+
+// class Loginview extends StatefulWidget {
+//   const Loginview({super.key});
+
+//   @override
+//   State<Loginview> createState() => _LoginviewState();
+// }
+
+// class _LoginviewState extends State<Loginview> {
+//   final TextEditingController _email = TextEditingController();
+//   final TextEditingController _password = TextEditingController();
+//   final FirebaseAuth _auth = FirebaseAuth.instance;
+
+//   @override
+//   void dispose() {
+//     _email.dispose();
+//     _password.dispose();
+//     super.dispose();
+//   }
+
+//   Future<void> _signIn() async {
+//     final email = _email.text.trim();
+//     final password = _password.text.trim();
+
+//     try {
+//       // Firebase login
+//       final userCredential = await _auth.signInWithEmailAndPassword(
+//         email: email,
+//         password: password,
+//       );
+
+//       print('User signed in: ${userCredential.user?.email}');
+
+//       // Save login state in SharedPreferences
+//       SharedPreferences prefs = await SharedPreferences.getInstance();
+//       await prefs.setBool('isLoggedIn', true);
+//       await prefs.setString('email', email);
+
+//       // Navigate to Homepage
+//       Navigator.of(context).pushReplacement(
+//         MaterialPageRoute(builder: (context) => const Homepage()),
+//       );
+//     } on FirebaseAuthException catch (e) {
+//       // Handle Firebase-specific errors
+//       if (e.code == 'user-not-found') {
+//         await showErrorDialog(context, 'No user found for this email.');
+//       } else if (e.code == 'wrong-password') {
+//         await showErrorDialog(context, 'Incorrect password.');
+//       } else {
+//         await showErrorDialog(context, 'Error: ${e.code}');
+//       }
+//     } catch (e) {
+//       // Handle other errors
+//       await showErrorDialog(context, 'Error: ${e.toString()}');
+//     }
+//   }
+
+//   Future<void> _checkLoginStatus() async {
+//     SharedPreferences prefs = await SharedPreferences.getInstance();
+//     bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+
+//     if (isLoggedIn) {
+//       Navigator.of(context).pushReplacement(
+//         MaterialPageRoute(builder: (context) => const Homepage()),
+//       );
+//     }
+//   }
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     _checkLoginStatus(); // Check login status on app start
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: const Text('Login'),
+//         backgroundColor: Colors.lime,
+//       ),
+//       body: Padding(
+//         padding: const EdgeInsets.all(16.0),
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.stretch,
+//           children: [
+//             TextFormField(
+//               controller: _email,
+//               enableSuggestions: false,
+//               autocorrect: false,
+//               keyboardType: TextInputType.emailAddress,
+//               decoration: const InputDecoration(
+//                 hintText: 'Enter your email address',
+//               ),
+//             ),
+//             const SizedBox(height: 16),
+//             TextFormField(
+//               controller: _password,
+//               obscureText: true,
+//               enableSuggestions: false,
+//               autocorrect: false,
+//               decoration: const InputDecoration(
+//                 hintText: 'Enter your password',
+//               ),
+//             ),
+//             const SizedBox(height: 16),
+//             ElevatedButton(
+//               onPressed: _signIn,
+//               child: const Text('Login'),
+//             ),
+//             ElevatedButton(
+//               onPressed: () {
+//                 Navigator.of(context).push(
+//                   MaterialPageRoute(builder: (context) => MyWidget()),
+//                 );
+//               },
+//               child: const Text('Forgot your password?'),
+//             ),
+//             ElevatedButton(
+//               onPressed: () {
+//                 Navigator.of(context).push(
+//                   MaterialPageRoute(builder: (context) => const RegisterView()),
+//                 );
+//               },
+//               child: const Text('Not Registered Yet? Register Here!'),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
 
 // import 'package:ecommerce_app/views/registerView.dart';
 // import 'package:ecommerce_app/views/show_error_dialogue.dart';

@@ -3,7 +3,7 @@ import 'package:ecommerce_app/navigationScreens/profile_screen.dart';
 import 'package:ecommerce_app/navigationScreens/settingScrren.dart';
 import 'package:ecommerce_app/navigationScreens/wishlistScreen.dart';
 import 'package:ecommerce_app/views/loginView.dart';
-import 'package:flutter/foundation.dart';
+import 'package:ecommerce_app/views/productListedTo_SB.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -21,13 +21,15 @@ class _HomepageState extends State<Homepage> {
     await prefs.clear();
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (context) => const Loginview(),
+        builder: (context) => const LoginView(),
       ),
     );
   }
 
+  // This variable is no longer necessary as we'll navigate directly
   int _currentIndex = 0;
 
+  // Pages for bottom navigation
   final List<Widget> _pages = [
     const CategoriesScreen(),
     const Wishlistscreen(),
@@ -36,30 +38,6 @@ class _HomepageState extends State<Homepage> {
     const ProfileScreen(),
   ];
 
-  // through this tab changes
-  void _onTabChanged(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
-  }
-
-  //  int _selectedIndex = 0;
-  static const TextStyle optionStyle =
-      TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
-  static const List<Widget> _widgetOptions = <Widget>[
-    Text(
-      'Index 0: Home',
-      style: optionStyle,
-    ),
-    Text(
-      'Index 1: Business',
-      style: optionStyle,
-    ),
-    Text(
-      'Index 2: School',
-      style: optionStyle,
-    ),
-  ];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -70,23 +48,103 @@ class _HomepageState extends State<Homepage> {
             return IconButton(
               icon: const Icon(Icons.menu),
               onPressed: () {
-                Scaffold.of(context).openDrawer();
+                Scaffold.of(context).openDrawer(); // Open the Drawer
               },
             );
           },
         ),
         elevation: 0,
-        actions: const [
-          Icon(Icons.search, color: Colors.black),
-          SizedBox(width: 20),
-          Icon(Icons.wallet, color: Colors.black),
-          SizedBox(width: 20),
+        actions: [
+          IconButton(
+            onPressed: () => _logout(context),
+            icon: const Icon(Icons.logout),
+            tooltip: 'Logout',
+          ),
+          const Icon(Icons.search, color: Colors.black),
+          const SizedBox(width: 20),
         ],
       ),
-      body: _pages[_currentIndex],
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.lime,
+              ),
+              child: Text(
+                'Menu',
+                style: TextStyle(color: Colors.white, fontSize: 24),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.sell),
+              title: const Text('Sell the products'),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => const ProductPage()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.favorite),
+              title: const Text('Wishlist'),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                      builder: (context) => const Wishlistscreen()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.shopping_cart),
+              title: const Text('Cart'),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => const CartScreen()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Settings'),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                      builder: (context) => const Settingscrren()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.person),
+              title: const Text('Profile'),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                      builder: (context) => const ProfileScreen()),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+      body: _pages[
+          _currentIndex], // Display corresponding page based on the selected index
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        onTap: _onTabChanged,
+        onTap: (index) {
+          setState(() {
+            _currentIndex =
+                index; // Update index to navigate to the selected page
+          });
+
+          // You can also push a new route if desired:
+          // Example:
+          // Navigator.push(
+          //   context,
+          //   MaterialPageRoute(builder: (context) => _pages[index]),
+          // );
+        },
         items: const [
           BottomNavigationBarItem(
             backgroundColor: Colors.grey,
@@ -111,7 +169,7 @@ class _HomepageState extends State<Homepage> {
           BottomNavigationBarItem(
             backgroundColor: Colors.grey,
             icon: Icon(Icons.info),
-            label: 'profile',
+            label: 'Profile',
           ),
         ],
       ),
@@ -119,14 +177,14 @@ class _HomepageState extends State<Homepage> {
   }
 }
 
-// Categories Screen Widget (Displays Categories of Products)
+// Categories Screen Widget
 class CategoriesScreen extends StatelessWidget {
   const CategoriesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 50),
+      padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -137,10 +195,7 @@ class CategoriesScreen extends StatelessWidget {
           const SizedBox(height: 20),
           const Row(
             children: [
-              Text(
-                'All',
-                style: TextStyle(color: Colors.red),
-              ),
+              Text('All', style: TextStyle(color: Colors.red)),
               SizedBox(width: 20),
               Text('Pesticides'),
               SizedBox(width: 20),
