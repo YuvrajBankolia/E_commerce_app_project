@@ -1,6 +1,8 @@
 import 'dart:io';
+import 'package:ecommerce_app/views/loginView.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ProductPage extends StatefulWidget {
@@ -33,6 +35,16 @@ class _ProductPageState extends State<ProductPage> {
   void initState() {
     super.initState();
     fetchProducts(); // Fetch products on app launch
+  }
+
+  Future<void> _logout(BuildContext context) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) => const LoginView(),
+      ),
+    );
   }
 
   // Function to pick an image from the gallery
@@ -107,9 +119,16 @@ class _ProductPageState extends State<ProductPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Products'),
-        backgroundColor: Colors.lime,
-      ),
+          title: const Text('Products'),
+          backgroundColor: Colors.lime,
+          actions: [
+            IconButton(
+              onPressed: () => _logout(context),
+              icon: const Icon(Icons.logout),
+              tooltip: 'Logout',
+            ),
+            const Icon(Icons.search, color: Colors.black),
+          ]),
       body: SingleChildScrollView(
         child: Column(
           children: [

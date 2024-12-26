@@ -77,15 +77,15 @@ class _HomepageState extends State<Homepage> {
                 style: TextStyle(color: Colors.white, fontSize: 24),
               ),
             ),
-            ListTile(
-              leading: const Icon(Icons.sell),
-              title: const Text('Sell the products'),
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => const ProductPage()),
-                );
-              },
-            ),
+            // ListTile(
+            //   leading: const Icon(Icons.sell),
+            //   title: const Text('Sell the products'),
+            //   onTap: () {
+            //     Navigator.of(context).push(
+            //       MaterialPageRoute(builder: (context) => const ProductPage()),
+            //     );
+            //   },
+            // ),
             ListTile(
               leading: const Icon(Icons.favorite),
               title: const Text('Wishlist'),

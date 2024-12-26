@@ -1,4 +1,5 @@
 // import 'package:ecommerce_app/views/forgot_password_view.dart';
+import 'package:ecommerce_app/views/productListedTo_SB.dart';
 import 'package:ecommerce_app/views/registerView.dart';
 import 'package:ecommerce_app/utilities/show_error_dialogue.dart';
 import 'package:ecommerce_app/views/send_OTP.dart';
@@ -26,42 +27,77 @@ class _LoginViewState extends State<LoginView> {
     super.dispose();
   }
 
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Error'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _signIn() async {
     final email = _email.text.trim();
     final password = _password.text.trim();
 
     try {
-      // Supabase login
       final response = await Supabase.instance.client.auth.signInWithPassword(
         email: email,
         password: password,
       );
 
-      if (response.session != null) {
-        // User successfully logged in
-        print('User signed in: ${response.user?.email}');
+      if (response.user != null) {
+        final profileResponse = await Supabase.instance.client
+            .from('profile')
+            .select('role')
+            .eq('email', email)
+            .select()
+            .maybeSingle();
 
-        // Save login state in SharedPreferences
+        if (profileResponse == null) {
+          _showErrorDialog('No profile found for the user.');
+          return;
+        }
+
+        final role = profileResponse['role'];
+
+        if (role == 'Vendor') {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const ProductPage()),
+          );
+        } else if (role == 'Customer') {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const Homepage()),
+          );
+        } else {
+          _showErrorDialog("Invalid role. Please contact support.");
+          return;
+        }
+
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setBool('isLoggedIn', true);
         await prefs.setString('email', email);
 
-        // Navigate to Homepage
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const Homepage()),
-        );
+        print('User signed in: ${response.user?.email}');
       } else {
-        // Handle unexpected login failure
-        await showErrorDialog(context, 'Login failed. Please try again.');
+        _showErrorDialog("Invalid email or password. Please try again.");
       }
     } on AuthException catch (e) {
-      // Handle Supabase-specific authentication errors
-      await showErrorDialog(context, e.message ?? 'Authentication error');
+      _showErrorDialog(e.message ?? 'Authentication error');
     } catch (e) {
-      // Handle general errors
-      await showErrorDialog(context, 'Error: ${e.toString()}');
+      _showErrorDialog('An unexpected error occurred: ${e.toString()}');
     }
   }
+
+  // }
+  // }
 
   Future<void> _checkLoginStatus() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -77,7 +113,7 @@ class _LoginViewState extends State<LoginView> {
   @override
   void initState() {
     super.initState();
-    _checkLoginStatus(); // Check login status on app start
+    _checkLoginStatus();
   }
 
   @override
@@ -119,9 +155,7 @@ class _LoginViewState extends State<LoginView> {
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).push(
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          MyWidget()), // Update this with your Forgot Password View
+                  MaterialPageRoute(builder: (context) => MyWidget()),
                 );
               },
               child: const Text('Forgot your password?'),
